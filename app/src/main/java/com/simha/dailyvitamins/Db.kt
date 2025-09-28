@@ -1,8 +1,7 @@
 package com.simha.dailyvitamins
 
-import androidx.room.*
 import android.content.Context
-import androidx.room.Room
+import androidx.room.*
 
 @Dao
 interface ItemsDao {
@@ -33,7 +32,21 @@ interface ChecksDao {
     suspend fun cleanup(keepFrom: String)
 }
 
-@Database(entities = [Item::class, Assignment::class, DailyCheck::class], version = 1)
+/** ✅ Converters אמיתיים ל־Room (מחרוזת <-> enum) */
+class Converters {
+    @TypeConverter
+    fun dayPartToString(dp: DayPart): String = dp.name
+
+    @TypeConverter
+    fun stringToDayPart(s: String): DayPart = DayPart.valueOf(s)
+}
+
+/** ✅ לבטל יצוא סכימות ולהפעיל את ה־Converters */
+@Database(
+    entities = [Item::class, Assignment::class, DailyCheck::class],
+    version = 1,
+    exportSchema = false
+)
 @TypeConverters(Converters::class)
 abstract class AppDb : RoomDatabase() {
     abstract fun items(): ItemsDao
@@ -45,5 +58,3 @@ abstract class AppDb : RoomDatabase() {
             Room.databaseBuilder(ctx, AppDb::class.java, "daily.db").build()
     }
 }
-
-class Converters
